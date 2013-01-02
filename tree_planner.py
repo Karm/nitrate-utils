@@ -24,10 +24,10 @@ for key in our_testplans.keys():
         print "        Grandparent: %s" % our_testplans[key].parent.parent
         if our_testplans[key].parent.id != new_parent_plan.id and our_testplans[key].parent.parent is None:
             print color("        Setting Grandparent to: %s" % new_parent_plan, color="red", background="black")
+            our_testplans[key].parent.parent = new_parent_plan
     else:
         print color("    Setting Parent to: %s" % new_parent_plan, color="red", background="black")
         our_testplans[key].parent = new_parent_plan
-
 
 
 

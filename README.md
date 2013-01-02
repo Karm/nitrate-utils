@@ -9,7 +9,8 @@ installation
  2. run ```make```
  3. fetch any missing things, like ```python-docutils``` or ```rpmbuild```
  4. install it: ```sudo yum install tmp/RPMS/noarch/python-nitrate-0.9-0.fc14.noarch.rpm```
-    (or add that ```nitrate``` module to your Python in any other convenient way)
+
+    ...or simply add ```nitrate``` module to your Python path in any other convenient way, e.g. by importing ```sources/nitrate``` folder, installing ```python-nitrate``` from your Yum repo...
  5. copy ```.nitrate``` to your home and edit ```url``` attribute
 
 utils

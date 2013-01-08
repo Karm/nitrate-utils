@@ -16,26 +16,34 @@ def logerror(err):
     time.sleep(5)
 
 def countRuns(testruns):
-    matching_runs_counter = 0
+    matching_runs_counter_build1 = 0
+    matching_runs_counter_build2 = 0
     for testrun in testruns:
         try:
-            if str(testrun.build) == str(options.build):
-                matching_runs_counter = matching_runs_counter + 1
+            if str(testrun.build) == str(options.build1):
+                matching_runs_counter_build1 = matching_runs_counter_build1 + 1
+            if str(testrun.build) == str(options.build2):
+                matching_runs_counter_build2 = matching_runs_counter_build2 + 1
         except xmlrpclib.ProtocolError, err:
             logerror(err)
-            if str(testrun.build) == str(options.build):
-                matching_runs_counter = matching_runs_counter + 1
-    return matching_runs_counter
+            if str(testrun.build) == str(options.build1):
+                matching_runs_counter_build1 = matching_runs_counter_build1 + 1
+            if str(testrun.build) == str(options.build2):
+                matching_runs_counter_build2 = matching_runs_counter_build2 + 1
+    return matching_runs_counter_build1, matching_runs_counter_build2
 
 if __name__ == "__main__":
-    parser = optparse.OptionParser(usage="check.py --plan PLAN --build BUILD [options]")
+    parser = optparse.OptionParser(usage="check.py --plan PLAN --build1 BUILD --build2 BUILD [options]")
     parser.add_option("--plan", dest="plan", type="int", help="test plan id")
-    parser.add_option("--build", dest="build", type="string", help="build name")
+    parser.add_option("--build1", dest="build1", type="string", help="build1 name")
+    parser.add_option("--build2", dest="build2", type="string", help="build2 name")
     options = parser.parse_args()[0]
 
     testplan = TestPlan(options.plan)
 
-    overall_counter = 0
+    overall_counter_build1 = 0
+    overall_counter_build2 = 0
+    msg_runs = "%sRuns created for build %s: %d"
 
     print color("Warning: This script may take dozens of minutes to complete :-(", color="lightred", background="black")
   
@@ -48,10 +56,18 @@ if __name__ == "__main__":
             logerror(err)
             testplan_testruns = testplan.testruns
 
-        runs_count = countRuns(testplan_testruns)
+        runs_count_build1, runs_count_build2 = countRuns(testplan_testruns)
         
-        overall_counter = overall_counter + runs_count
-        print "    Runs created for build %s: %d" % (options.build, runs_count)
+        overall_counter_build1 = overall_counter_build1 + runs_count_build1
+        overall_counter_build2 = overall_counter_build2 + runs_count_build2
+
+        if runs_count_build1 != runs_count_build2:
+            text_color = "red"
+        else:
+            text_color = "green"
+
+        print color(msg_runs % ('    ', options.build1, runs_count_build1), text_color)
+        print color(msg_runs % ('    ', options.build2, runs_count_build2), text_color)
 
         try:
             testplan_children = testplan.children
@@ -68,8 +84,15 @@ if __name__ == "__main__":
                 logerror(err)
                 child_testruns = child.testruns
 
-            runs_count = countRuns(child_testruns)
-            overall_counter = overall_counter + runs_count
-            print "        Runs created for build %s: %d" % (options.build, runs_count)
-    
-    print "For all the test plans, there are %d runs with build %s" % (overall_counter, options.build)
+            runs_count_build1, runs_count_build2 = countRuns(child_testruns)
+            overall_counter_build1 = overall_counter_build1 + runs_count_build1
+            overall_counter_build2 = overall_counter_build2 + runs_count_build2
+            if runs_count_build1 != runs_count_build2:
+                text_color = "red"
+            else:
+                text_color = "green"
+
+            print color(msg_runs % ('        ', options.build1, runs_count_build1), text_color)
+            print color(msg_runs % ('        ', options.build2, runs_count_build2), text_color)
+
+    print "There are %d runs with build %s and %d runs with build %s." % (overall_counter_build1, options.build1, overall_counter_build2, options.build2)

@@ -43,7 +43,8 @@ if __name__ == "__main__":
 
     overall_counter_build1 = 0
     overall_counter_build2 = 0
-    msg_runs = "%sRuns created for build %s: %d"
+    msg_runs = "%sRuns created for build %s: %d %s"
+    msg_notify = " Notify %s"
 
     print color("Warning: This script may take dozens of minutes to complete :-(", color="lightred", background="black")
   
@@ -63,11 +64,13 @@ if __name__ == "__main__":
 
         if runs_count_build1 != runs_count_build2:
             text_color = "red"
+            notify_author =  msg_notify % testplan.author.email
         else:
             text_color = "green"
+            notify_author =  ""
 
-        print color(msg_runs % ('    ', options.build1, runs_count_build1), text_color)
-        print color(msg_runs % ('    ', options.build2, runs_count_build2), text_color)
+        print color(msg_runs % ('    ', options.build1, runs_count_build1, ""), text_color)
+        print color(msg_runs % ('    ', options.build2, runs_count_build2, notify_author), text_color)
 
         try:
             testplan_children = testplan.children
@@ -89,10 +92,12 @@ if __name__ == "__main__":
             overall_counter_build2 = overall_counter_build2 + runs_count_build2
             if runs_count_build1 != runs_count_build2:
                 text_color = "red"
+                notify_author =  msg_notify % testplan.author.email
             else:
                 text_color = "green"
+                notify_author =  ""
 
-            print color(msg_runs % ('        ', options.build1, runs_count_build1), text_color)
-            print color(msg_runs % ('        ', options.build2, runs_count_build2), text_color)
+            print color(msg_runs % ('    ', options.build1, runs_count_build1, ""), text_color)
+            print color(msg_runs % ('    ', options.build2, runs_count_build2, notify_author), text_color)
 
     print "There are %d runs with build %s and %d runs with build %s." % (overall_counter_build1, options.build1, overall_counter_build2, options.build2)

@@ -120,4 +120,23 @@ takes all *Test Runs* matching *Build* PRODUCT8.7.1 and *Product* PRODUCT under 
         143377            mod_cluster Failover with SSL                 IDLE    
     ....................................................................................
 
+Alternativelly, you might want to actually change some *Test Case* statuses, here you go:
+
+    $ python runs.py --plan 5709 --build PRODUCT8.7.1 --product PRODUCT --set_status 60357:143377,167731 --set_status_name PASSED
+
+so you get:
+
+    Loading ████████████ DONE
+    Test run ID       Test run summary                              Test run status     
+    60358             PRODUCT8.7.1 mod_cluster on Solaris 11 SPARC  RUNNING             
+        Test case ID      Test case summary                             Test case status
+        167731            mod_cluster APR natives                       IDLE
+        143377            mod_cluster Failover with SSL                 IDLE
+        143379            mod_cluster Server-side Load Calculation      IDLE
+    60357             PRODUCT8.7.1 mod_cluster on Solaris 11 x86_64 RUNNING             
+        Test case ID      Test case summary                             Test case status
+        167731            mod_cluster APR natives                       PASSED
+        143377            mod_cluster Failover with SSL                 PASSED    
+    ....................................................................................
+
 That's it.

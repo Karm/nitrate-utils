@@ -7,6 +7,9 @@ from nitrate import *
 import xmlrpclib
 
 runs = [["Test run ID", "Test run summary", "Test run status"]]
+setstatus_testrun_id = 0
+setstatus_testcase_ids = []
+setstatus_statusname = ""
 
 def logerror(err):
     print color("ProtocolError, we will try it again in 5 seconds.", color="lightred", background="black")
@@ -24,14 +27,34 @@ def printRuns(testruns):
         runs.append([str(testrun.id), testrun.summary, testrun.status.name])
         runs.append(["    Test case ID", "    Test case summary", "    Test case status"])
         for caserun in testrun.caseruns:
-            runs.append(["    %s" % str(caserun.testcase.id), "    %s" % str(caserun.testcase.summary), "    %s" % caserun.status.name])
+            if testrun.id == setstatus_testrun_id and str(caserun.testcase.id) in setstatus_testcase_ids:
+                old_status = caserun.status
+                caserun.status = Status(setstatus_statusname)
+                try:
+                    caserun.update()
+                except xmlrpclib.ProtocolError, err:
+                    logerror(err)
+                    caserun.update()
+                runs.append(["    %s" % str(caserun.testcase.id), "    %s" % str(caserun.testcase.summary), "    %s (was %s)" % (caserun.status.name, old_status.name)])
+            else:
+                runs.append(["    %s" % str(caserun.testcase.id), "    %s" % str(caserun.testcase.summary), "    %s" % caserun.status.name])
  
 if __name__ == "__main__":
-    parser = optparse.OptionParser(usage="check.py --plan PLAN --build BUILD --product \"JBoss EAP\"")
+    parser = optparse.OptionParser(usage="check.py --plan PLAN --build BUILD --product \"JBoss EAP\" OPTIONAL: --set_status TESTRUN_ID:TESTCASE_ID,TESTCASE_ID,...")
     parser.add_option("--plan", dest="plan", type="int", help="test plan id", default=5709)
     parser.add_option("--build", dest="build", type="string", help="build name", default="EAP6.1.0.ER4")
     parser.add_option("--product", dest="product", type="string", help="product name", default="JBoss EAP")
+    parser.add_option("--set_status", dest="set_status", type="string", help="set status of certain test cases")
+    parser.add_option("--set_status_name", dest="set_status_name", type="string", help="PAD IDLE PASSED FAILED RUNNING PAUSED BLOCKED ERROR WAIVED")
+
     options = parser.parse_args()[0]
+
+    if options.set_status != None:
+        setstatus_testrun_id = int(options.set_status.split(":")[0])
+        setstatus_testcase_ids = (options.set_status.split(":")[1]).split(",")
+
+    if options.set_status_name != None:
+        setstatus_statusname = options.set_status_name
 
     testplan = TestPlan(options.plan)
     build = Build(id=None, product=options.product, build=options.build)

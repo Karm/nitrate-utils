@@ -102,7 +102,9 @@ If the Parent Test Plan is *Plan A 5552* already we do nothing:
 runs.py
 -------
 "Runs" script called with:
+
     $ python jobs.py --plan 5709 --build PRODUCT8.7.1 --product PRODUCT
+
 takes all *Test Runs* matching *Build* PRODUCT8.7.1 and *Product* PRODUCT under your *Test Plan* 5709 and prints out each *Test Case* within each *Test Run* along with its status. See:
 
     Loading ████████████ DONE

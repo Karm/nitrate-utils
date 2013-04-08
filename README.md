@@ -99,4 +99,23 @@ If the Parent Test Plan is *Plan A 5552* already we do nothing:
         Parent: Plan A 5552
             Grandparent: None    
 
+runs.py
+-------
+"Runs" script called with:
+    $ python jobs.py --plan 5709 --build PRODUCT8.7.1 --product PRODUCT
+takes all *Test Runs* matching *Build* PRODUCT8.7.1 and *Product* PRODUCT under your *Test Plan* 5709 and prints out each *Test Case* within each *Test Run* along with its status. See:
+
+    Loading ████████████ DONE
+    Test run ID       Test run summary                              Test run status     
+    60358             PRODUCT8.7.1 mod_cluster on Solaris 11 SPARC  RUNNING             
+        Test case ID      Test case summary                             Test case status
+        167731            mod_cluster APR natives                       IDLE
+        143377            mod_cluster Failover with SSL                 IDLE
+        143379            mod_cluster Server-side Load Calculation      IDLE
+    60357             PRODUCT8.7.1 mod_cluster on Solaris 11 x86_64 RUNNING             
+        Test case ID      Test case summary                             Test case status
+        167731            mod_cluster APR natives                       IDLE
+        143377            mod_cluster Failover with SSL                 IDLE    
+    ....................................................................................
+
 That's it.

@@ -103,40 +103,44 @@ runs.py
 -------
 "Runs" script called with:
 
-    $ python jobs.py --plan 5709 --build PRODUCT8.7.1 --product PRODUCT
+    $ python runs.py --plan 5709 --build PRODUCT8.7.1 --product "PRODUCT"
 
 takes all *Test Runs* matching *Build* PRODUCT8.7.1 and *Product* PRODUCT under your *Test Plan* 5709 and prints out each *Test Case* within each *Test Run* along with its status. See:
 
-    Loading ████████████ DONE
+    [PLAN] TP#5709 - mod_cluster ENABLED
+    Loading ▒▓▓▓▒▓▓▒▓▓▓▓▒▓▓▓▒▓▓▒▓▓▓▒▓▓▒▓▓▒▓▓▓▒▓▓▓▒▓▓▓▒▓▓▓ DONE
     Test run ID       Test run summary                              Test run status     
-    60358             PRODUCT8.7.1 mod_cluster on Solaris 11 SPARC  RUNNING             
+    60358             RODUCT8.7.1 mod_cluster on Solaris 11 SPARC   RUNNING             
         Test case ID      Test case summary                             Test case status
-        167731            mod_cluster APR natives                       IDLE
-        143377            mod_cluster Failover with SSL                 IDLE
-        143379            mod_cluster Server-side Load Calculation      IDLE
-    60357             PRODUCT8.7.1 mod_cluster on Solaris 11 x86_64 RUNNING             
+        167731            mod_cluster APR natives                       ERROR           
+        143377            mod_cluster Failover with SSL                 ERROR           
+        143379            mod_cluster Server-side Load Calculation      ERROR           
+    60357             RODUCT8.7.1 mod_cluster on Solaris 11 x86_64  RUNNING             
         Test case ID      Test case summary                             Test case status
-        167731            mod_cluster APR natives                       IDLE
-        143377            mod_cluster Failover with SSL                 IDLE    
+        167731            mod_cluster APR natives                       ERROR           
+        143377            mod_cluster Failover with SSL                 PASSED          
     ....................................................................................
 
-Alternativelly, you might want to actually change some *Test Case* statuses, here you go:
+Alternativelly, you might want to actually change some *Test Run* or *Case Run* statuses, here you go:
 
-    $ python runs.py --plan 5709 --build PRODUCT8.7.1 --product PRODUCT --set_status "60357:143377,167731;60358:167731" --set_status_name PASSED
+    $ python runs.py --plan 5709 --build PRODUCT8.7.1 --product "PRODUCT" \ 
+    --case_run_status_ids "60358:167731,143377,143379;60357:167731" --case_run_status PASSED \
+    --run_status_ids 60358,60357 --run_status FINISHED
 
 so you get:
 
-    Loading ████████████ DONE
-    Test run ID       Test run summary                              Test run status     
-    60358             PRODUCT8.7.1 mod_cluster on Solaris 11 SPARC  RUNNING             
-        Test case ID      Test case summary                             Test case status
-        167731            mod_cluster APR natives                       PASSED (was IDLE)
-        143377            mod_cluster Failover with SSL                 IDLE
-        143379            mod_cluster Server-side Load Calculation      IDLE
-    60357             PRODUCT8.7.1 mod_cluster on Solaris 11 x86_64 RUNNING             
-        Test case ID      Test case summary                             Test case status
-        167731            mod_cluster APR natives                       PASSED (was IDLE)
-        143377            mod_cluster Failover with SSL                 PASSED (was IDLE)    
-    ....................................................................................
+    [PLAN] TP#5709 - mod_cluster ENABLED
+    Loading ▒▓▓▓▒▓▓▒▓▓▓▓▒▓▓▓▒▓▓▒▓▓▓▒▓▓▒▓▓▒▓▓▓▒▓▓▓▒▓▓▓▒▓▓▓ DONE
+    Test run ID       Test run summary                              Test run status       
+    60358             RODUCT8.7.1 mod_cluster on Solaris 11 SPARC   FINISHED (was RUNNING)
+        Test case ID      Test case summary                             Test case status  
+        167731            mod_cluster APR natives                       PASSED (was ERROR)
+        143377            mod_cluster Failover with SSL                 PASSED (was ERROR)
+        143379            mod_cluster Server-side Load Calculation      PASSED (was ERROR)
+    60357             RODUCT8.7.1 mod_cluster on Solaris 11 x86_64  FINISHED (was RUNNING)
+        Test case ID      Test case summary                             Test case status  
+        167731            mod_cluster APR natives                       PASSED (was ERROR)
+        143377            mod_cluster Failover with SSL                 PASSED            
+    ......................................................................................
 
 That's it.

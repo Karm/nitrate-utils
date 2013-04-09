@@ -9,8 +9,14 @@ import threading
 
 runs = [["Test run ID", "Test run summary", "Test run status"]]
 
-setstatus_testrun_testcases = {}
-setstatus_statusname = ""
+case_run_status_ids = {}
+case_run_status = ""
+run_status_ids = []
+run_status = ""
+
+"""
+On threading: It is disabled, because at 
+"""
 #worker_threads = []
 
 def logerror(err):
@@ -24,14 +30,26 @@ def logerror(err):
 
 def processInParalel(testrun, setstatus_testcase_ids):
     tmp_runs = []
-    tmp_runs.append([str(testrun.id), testrun.summary, testrun.status.name])
+
+    if str(testrun.id) in run_status_ids:
+        old_status = testrun.status
+        testrun.status = RunStatus(run_status)
+        try:
+            testrun.update()
+        except xmlrpclib.ProtocolError, err:
+            logerror(err)
+            testrun.update()
+        tmp_runs.append([str(testrun.id), str(testrun.summary), "%s (was %s)" % (testrun.status.name, old_status.name)])
+    else:
+        tmp_runs.append([str(testrun.id), str(testrun.summary), testrun.status.name])
+
     tmp_runs.append(["    Test case ID", "    Test case summary", "    Test case status"])
     for caserun in testrun.caseruns:
         sys.stdout.write('▓')
         sys.stdout.flush()
         if str(caserun.testcase.id) in setstatus_testcase_ids:
             old_status = caserun.status
-            caserun.status = Status(setstatus_statusname)
+            caserun.status = Status(case_run_status)
             try:
                 caserun.update()
             except xmlrpclib.ProtocolError, err:
@@ -46,7 +64,7 @@ def printRuns(testruns):
     for testrun in testruns:
         sys.stdout.write('▒')
         sys.stdout.flush()
-        setstatus_testcase_ids = setstatus_testrun_testcases.pop(testrun.id,[None])
+        setstatus_testcase_ids = case_run_status_ids.pop(testrun.id,[None])
         #workerThread = threading.Thread(target=processInParalel, args = (testrun, setstatus_testcase_ids))
         #workerThread.daemon = True
         #workerThread.start()
@@ -54,21 +72,29 @@ def printRuns(testruns):
         processInParalel(testrun, setstatus_testcase_ids)
 
 if __name__ == "__main__":
-    parser = optparse.OptionParser(usage="check.py --plan PLAN --build BUILD --product \"JBoss EAP\" OPTIONAL: --set_status TESTRUN_ID1:TESTCASE_ID1,TESTCASE_ID2,...;TESTRUN_ID2:TESTCASE_ID1,...")
+    parser = optparse.OptionParser(usage="check.py --plan PLAN --build BUILD --product \"JBoss EAP\" OPTIONAL: --case_run_status_ids \"TESTRUN_ID1:TESTCASE_ID1,TESTCASE_ID2,...;TESTRUN_ID2:TESTCASE_ID1,...\" --case_run_status STATUS --run_status_ids TESTRUN_ID1,TESTRUN_ID2,... --run_status STATUS")
     parser.add_option("--plan", dest="plan", type="int", help="test plan id", default=5709)
     parser.add_option("--build", dest="build", type="string", help="build name", default="EAP6.1.0.ER4")
     parser.add_option("--product", dest="product", type="string", help="product name", default="JBoss EAP")
-    parser.add_option("--set_status", dest="set_status", type="string", help="set status of certain test cases")
-    parser.add_option("--set_status_name", dest="set_status_name", type="string", help="PAD IDLE PASSED FAILED RUNNING PAUSED BLOCKED ERROR WAIVED")
+    parser.add_option("--case_run_status_ids", dest="case_run_status_ids", type="string", help="set status of certain case runs")
+    parser.add_option("--case_run_status", dest="case_run_status", type="string", help="PAD, IDLE, PASSED, FAILED, RUNNING, PAUSED, BLOCKED, ERROR, WAIVED")
+    parser.add_option("--run_status_ids", dest="run_status_ids", type="string", help="set status of certain runs")
+    parser.add_option("--run_status", dest="run_status", type="string", help="RUNNING FINISHED")
 
     options = parser.parse_args()[0]
 
-    if options.set_status != None:
-        for one_testrun in options.set_status.split(";"):
-            setstatus_testrun_testcases.update({int(one_testrun.split(":")[0]):(one_testrun.split(":")[1]).split(",")})
+    if options.case_run_status_ids != None:
+        for one_testrun in options.case_run_status_ids.split(";"):
+            case_run_status_ids.update({int(one_testrun.split(":")[0]):(one_testrun.split(":")[1]).split(",")})
 
-    if options.set_status_name != None:
-        setstatus_statusname = options.set_status_name
+    if options.case_run_status != None:
+        case_run_status = options.case_run_status
+
+    if options.run_status_ids != None:
+        run_status_ids = options.run_status_ids.split(",")
+
+    if options.run_status != None:
+        run_status = options.run_status
 
     testplan = TestPlan(options.plan)
     build = Build(id=None, product=options.product, build=options.build)

@@ -5,11 +5,13 @@
 import re, sys, optparse, time
 from nitrate import *
 import xmlrpclib
+import threading
 
 runs = [["Test run ID", "Test run summary", "Test run status"]]
 
 setstatus_testrun_testcases = {}
 setstatus_statusname = ""
+#worker_threads = []
 
 def logerror(err):
     print color("ProtocolError, we will try it again in 5 seconds.", color="lightred", background="black")
@@ -20,29 +22,37 @@ def logerror(err):
     print "    Error message: %s" % err.errmsg
     time.sleep(5)
 
+def processInParalel(testrun, setstatus_testcase_ids):
+    tmp_runs = []
+    tmp_runs.append([str(testrun.id), testrun.summary, testrun.status.name])
+    tmp_runs.append(["    Test case ID", "    Test case summary", "    Test case status"])
+    for caserun in testrun.caseruns:
+        sys.stdout.write('▓')
+        sys.stdout.flush()
+        if str(caserun.testcase.id) in setstatus_testcase_ids:
+            old_status = caserun.status
+            caserun.status = Status(setstatus_statusname)
+            try:
+                caserun.update()
+            except xmlrpclib.ProtocolError, err:
+                logerror(err)
+                caserun.update()
+            tmp_runs.append(["    %s" % str(caserun.testcase.id), "    %s" % str(caserun.testcase.summary), "    %s (was %s)" % (caserun.status.name, old_status.name)])
+        else:
+            tmp_runs.append(["    %s" % str(caserun.testcase.id), "    %s" % str(caserun.testcase.summary), "    %s" % caserun.status.name])
+    runs.extend(tmp_runs)
+
 def printRuns(testruns):
     for testrun in testruns:
-        sys.stdout.write('█')
+        sys.stdout.write('▒')
         sys.stdout.flush()
-
-        runs.append([str(testrun.id), testrun.summary, testrun.status.name])
-        runs.append(["    Test case ID", "    Test case summary", "    Test case status"])
-
         setstatus_testcase_ids = setstatus_testrun_testcases.pop(testrun.id,[None])
+        #workerThread = threading.Thread(target=processInParalel, args = (testrun, setstatus_testcase_ids))
+        #workerThread.daemon = True
+        #workerThread.start()
+        #worker_threads.append(workerThread)
+        processInParalel(testrun, setstatus_testcase_ids)
 
-        for caserun in testrun.caseruns:
-            if str(caserun.testcase.id) in setstatus_testcase_ids:
-                old_status = caserun.status
-                caserun.status = Status(setstatus_statusname)
-                try:
-                    caserun.update()
-                except xmlrpclib.ProtocolError, err:
-                    logerror(err)
-                    caserun.update()
-                runs.append(["    %s" % str(caserun.testcase.id), "    %s" % str(caserun.testcase.summary), "    %s (was %s)" % (caserun.status.name, old_status.name)])
-            else:
-                runs.append(["    %s" % str(caserun.testcase.id), "    %s" % str(caserun.testcase.summary), "    %s" % caserun.status.name])
- 
 if __name__ == "__main__":
     parser = optparse.OptionParser(usage="check.py --plan PLAN --build BUILD --product \"JBoss EAP\" OPTIONAL: --set_status TESTRUN_ID1:TESTCASE_ID1,TESTCASE_ID2,...;TESTRUN_ID2:TESTCASE_ID1,...")
     parser.add_option("--plan", dest="plan", type="int", help="test plan id", default=5709)
@@ -65,7 +75,7 @@ if __name__ == "__main__":
 
     msg_runs = "%sRuns created for build %s: %s"
 
-    print color("Warning: This script may take minutes to complete.", color="lightred", background="black")
+    print color("Warning: This script may take minutes to complete. I can work in parallel, yet python-nitrate keeps only 1 connection open :-(", color="lightred", background="black")
   
     print "[PLAN] %s %s" % (testplan, testplan.status)
 
@@ -82,6 +92,11 @@ if __name__ == "__main__":
     except xmlrpclib.ProtocolError, err:
         logerror(err)
         printRuns(testplan_testruns)
+
+    #for workerThread in worker_threads:
+    #    sys.stdout.write('▒')
+    #    sys.stdout.flush()
+    #    workerThread.join()
 
     sys.stdout.write(" DONE\n")
     col_width = max(len(word) for row in runs for word in row) + 2

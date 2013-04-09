@@ -5,6 +5,7 @@
 import re, sys, optparse, time
 from nitrate import *
 import xmlrpclib
+from sets import Set
 
 def logerror(err):
     print color("ProtocolError, we will try it again in 5 seconds.", color="lightred", background="black")
@@ -18,7 +19,9 @@ def logerror(err):
 def countRuns(testruns):
     matching_runs_counter_build1 = 0
     matching_runs_counter_build2 = 0
+    testers_set = Set()
     for testrun in testruns:
+        testers_set.add(testrun.tester.email)
         try:
             if str(testrun.build) == str(options.build1):
                 matching_runs_counter_build1 = matching_runs_counter_build1 + 1
@@ -30,7 +33,7 @@ def countRuns(testruns):
                 matching_runs_counter_build1 = matching_runs_counter_build1 + 1
             if str(testrun.build) == str(options.build2):
                 matching_runs_counter_build2 = matching_runs_counter_build2 + 1
-    return matching_runs_counter_build1, matching_runs_counter_build2
+    return matching_runs_counter_build1, matching_runs_counter_build2, testers_set
 
 if __name__ == "__main__":
     parser = optparse.OptionParser(usage="check.py --plan PLAN --build1 BUILD --build2 BUILD [options]")
@@ -45,6 +48,7 @@ if __name__ == "__main__":
     overall_counter_build2 = 0
     msg_runs = "%sRuns created for build %s: %d %s"
     msg_notify = " Notify %s"
+    my_tcms_url = Nitrate()._config.nitrate.url.split("xml")[0]
 
     print color("Warning: This script may take dozens of minutes to complete :-(", color="lightred", background="black")
   
@@ -57,18 +61,19 @@ if __name__ == "__main__":
             logerror(err)
             testplan_testruns = testplan.testruns
 
-        runs_count_build1, runs_count_build2 = countRuns(testplan_testruns)
+        runs_count_build1, runs_count_build2, testers_set = countRuns(testplan_testruns)
         
         overall_counter_build1 = overall_counter_build1 + runs_count_build1
         overall_counter_build2 = overall_counter_build2 + runs_count_build2
 
         if runs_count_build1 != runs_count_build2:
             text_color = "red"
-            notify_author =  msg_notify % testplan.author.email
+            notify_author =  msg_notify % str(list(testers_set))
+            print color(" -> %s%s%s" % (my_tcms_url, "plan/", testplan.id), text_color)
         else:
             text_color = "green"
             notify_author =  ""
-
+        
         print color(msg_runs % ('    ', options.build1, runs_count_build1, ""), text_color)
         print color(msg_runs % ('    ', options.build2, runs_count_build2, notify_author), text_color)
 
@@ -87,17 +92,18 @@ if __name__ == "__main__":
                 logerror(err)
                 child_testruns = child.testruns
 
-            runs_count_build1, runs_count_build2 = countRuns(child_testruns)
+            runs_count_build1, runs_count_build2, testers_set = countRuns(child_testruns)
             overall_counter_build1 = overall_counter_build1 + runs_count_build1
             overall_counter_build2 = overall_counter_build2 + runs_count_build2
             if runs_count_build1 != runs_count_build2:
                 text_color = "red"
-                notify_author =  msg_notify % testplan.author.email
+                notify_author =  msg_notify % str(list(testers_set))   
+                print color("     -> %s%s%s" % (my_tcms_url, "plan/", child.id), text_color) 
             else:
                 text_color = "green"
                 notify_author =  ""
 
-            print color(msg_runs % ('    ', options.build1, runs_count_build1, ""), text_color)
-            print color(msg_runs % ('    ', options.build2, runs_count_build2, notify_author), text_color)
+            print color(msg_runs % ('        ', options.build1, runs_count_build1, ""), text_color)
+            print color(msg_runs % ('        ', options.build2, runs_count_build2, notify_author), text_color)
 
     print "There are %d runs with build %s and %d runs with build %s." % (overall_counter_build1, options.build1, overall_counter_build2, options.build2)

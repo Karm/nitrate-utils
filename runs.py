@@ -7,8 +7,8 @@ from nitrate import *
 import xmlrpclib
 
 runs = [["Test run ID", "Test run summary", "Test run status"]]
-setstatus_testrun_id = 0
-setstatus_testcase_ids = []
+
+setstatus_testrun_testcases = {}
 setstatus_statusname = ""
 
 def logerror(err):
@@ -24,10 +24,14 @@ def printRuns(testruns):
     for testrun in testruns:
         sys.stdout.write('█')
         sys.stdout.flush()
+
         runs.append([str(testrun.id), testrun.summary, testrun.status.name])
         runs.append(["    Test case ID", "    Test case summary", "    Test case status"])
+
+        setstatus_testcase_ids = setstatus_testrun_testcases.pop(testrun.id,[None])
+
         for caserun in testrun.caseruns:
-            if testrun.id == setstatus_testrun_id and str(caserun.testcase.id) in setstatus_testcase_ids:
+            if str(caserun.testcase.id) in setstatus_testcase_ids:
                 old_status = caserun.status
                 caserun.status = Status(setstatus_statusname)
                 try:
@@ -40,7 +44,7 @@ def printRuns(testruns):
                 runs.append(["    %s" % str(caserun.testcase.id), "    %s" % str(caserun.testcase.summary), "    %s" % caserun.status.name])
  
 if __name__ == "__main__":
-    parser = optparse.OptionParser(usage="check.py --plan PLAN --build BUILD --product \"JBoss EAP\" OPTIONAL: --set_status TESTRUN_ID:TESTCASE_ID,TESTCASE_ID,...")
+    parser = optparse.OptionParser(usage="check.py --plan PLAN --build BUILD --product \"JBoss EAP\" OPTIONAL: --set_status TESTRUN_ID1:TESTCASE_ID1,TESTCASE_ID2,...;TESTRUN_ID2:TESTCASE_ID1,...")
     parser.add_option("--plan", dest="plan", type="int", help="test plan id", default=5709)
     parser.add_option("--build", dest="build", type="string", help="build name", default="EAP6.1.0.ER4")
     parser.add_option("--product", dest="product", type="string", help="product name", default="JBoss EAP")
@@ -50,8 +54,8 @@ if __name__ == "__main__":
     options = parser.parse_args()[0]
 
     if options.set_status != None:
-        setstatus_testrun_id = int(options.set_status.split(":")[0])
-        setstatus_testcase_ids = (options.set_status.split(":")[1]).split(",")
+        for one_testrun in options.set_status.split(";"):
+            setstatus_testrun_testcases.update({int(one_testrun.split(":")[0]):(one_testrun.split(":")[1]).split(",")})
 
     if options.set_status_name != None:
         setstatus_statusname = options.set_status_name

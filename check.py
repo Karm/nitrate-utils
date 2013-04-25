@@ -32,7 +32,7 @@ def countRuns(testruns):
             if str(testrun.build) == str(options.build1):
                 matching_runs_counter_build1 = matching_runs_counter_build1 + 1
             if str(testrun.build) == str(options.build2):
-                matching_runs_counter_build2 = matching_runs_counter_build2 + 1
+                matching_runs_counter_build2 = matching_runs_counter_build2 + 1        
     return matching_runs_counter_build1, matching_runs_counter_build2, testers_set
 
 if __name__ == "__main__":
@@ -62,26 +62,28 @@ if __name__ == "__main__":
             testplan_testruns = testplan.testruns
 
         runs_count_build1, runs_count_build2, testers_set = countRuns(testplan_testruns)
-        
         overall_counter_build1 = overall_counter_build1 + runs_count_build1
         overall_counter_build2 = overall_counter_build2 + runs_count_build2
-
-        if runs_count_build1 != runs_count_build2:
-            text_color = "red"
-            notify_author =  msg_notify % str(list(testers_set))
-            print color(" -> %s%s%s" % (my_tcms_url, "plan/", testplan.id), text_color)
-        else:
-            text_color = "green"
-            notify_author =  ""
-        
-        print color(msg_runs % ('    ', options.build1, runs_count_build1, ""), text_color)
-        print color(msg_runs % ('    ', options.build2, runs_count_build2, notify_author), text_color)
 
         try:
             testplan_children = testplan.children
         except xmlrpclib.ProtocolError, err:
             logerror(err)
             testplan_children = testplan.children
+
+        if len(testers_set) == 0:
+            testers_set.add(testplan.author.email)
+
+        if ((runs_count_build1 > runs_count_build2) or (testplan.status.id == True and runs_count_build2 == 0 and len(testplan_children) == 0)):
+            text_color = "red"
+            notify_author =  msg_notify % str(list(testers_set))
+            print color(" -> %s%s%s" % (my_tcms_url, "plan/", testplan.id), text_color)
+        else:
+            text_color = "green"
+            notify_author =  ""
+
+        print color(msg_runs % ('    ', options.build1, runs_count_build1, ""), text_color)
+        print color(msg_runs % ('    ', options.build2, runs_count_build2, notify_author), text_color)
 
         for child in testplan_children:
             print "    [CHILD plan] %s %s" % (child, child.status)
@@ -95,7 +97,11 @@ if __name__ == "__main__":
             runs_count_build1, runs_count_build2, testers_set = countRuns(child_testruns)
             overall_counter_build1 = overall_counter_build1 + runs_count_build1
             overall_counter_build2 = overall_counter_build2 + runs_count_build2
-            if runs_count_build1 != runs_count_build2:
+
+            if len(testers_set) == 0:
+                testers_set.add(testplan.author.email)            
+
+            if ((runs_count_build1 > runs_count_build2) or (child.status.id == True and runs_count_build2 == 0)):
                 text_color = "red"
                 notify_author =  msg_notify % str(list(testers_set))   
                 print color("     -> %s%s%s" % (my_tcms_url, "plan/", child.id), text_color) 

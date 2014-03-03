@@ -74,7 +74,11 @@ if __name__ == "__main__":
         if len(testers_set) == 0:
             testers_set.add(testplan.author.email)
 
-        if ((runs_count_build1 > runs_count_build2) or (testplan.status.id == True and runs_count_build2 == 0 and len(testplan_children) == 0)):
+        if (runs_count_build1 > runs_count_build2):
+            text_color = "yellow"
+            notify_author =  ""
+            print color(" -> %s%s%s" % (my_tcms_url, "plan/", testplan.id), text_color)
+        elif (testplan.status.id == True and runs_count_build2 == 0 and len(testplan_children) == 0):
             text_color = "red"
             notify_author =  msg_notify % str(list(testers_set))
             print color(" -> %s%s%s" % (my_tcms_url, "plan/", testplan.id), text_color)

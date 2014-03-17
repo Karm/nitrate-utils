@@ -78,7 +78,7 @@ if __name__ == "__main__":
             text_color = "yellow"
             notify_author =  ""
             print color(" -> %s%s%s" % (my_tcms_url, "plan/", testplan.id), text_color)
-        elif (testplan.status.id == True and runs_count_build2 == 0 and len(testplan_children) == 0):
+        elif (testplan.status.id == True and runs_count_build1 == 0 and len(testplan_children) == 0):
             text_color = "red"
             notify_author =  msg_notify % str(list(testers_set))
             print color(" -> %s%s%s" % (my_tcms_url, "plan/", testplan.id), text_color)
@@ -109,7 +109,7 @@ if __name__ == "__main__":
                 text_color = "yellow"
                 notify_author =  ""
                 print color("     -> %s%s%s" % (my_tcms_url, "plan/", child.id), text_color) 
-            elif (child.status.id == True and runs_count_build2 == 0):
+            elif (child.status.id == True and runs_count_build1 == 0):
                 text_color = "red"
                 notify_author =  msg_notify % str(list(testers_set))   
                 print color("     -> %s%s%s" % (my_tcms_url, "plan/", child.id), text_color) 

@@ -143,4 +143,22 @@ so you get:
         143377            mod_cluster Failover with SSL                 PASSED            
     ......................................................................................
 
+cloner.py
+---------
+One might face the necessity of cloning many *Test Runs*, having to adjust only several fields, e.g. new *Build*, *Product version* and set oneself as a Test Run tester or manager.
+With cloner utility, this task is a breeze:
+
+    $ python ./cloner.py --plan 7174 --build "PRODUCT 8.0" --product "PRODUCT" --new_product_version "8.1" --new_build "PRODUCT 8.1" --new_tester "shadowman@redhat.com" --new_manager "shadowman@redhat.com"
+
+One get a similar output:
+
+    Loading ...
+    [PLAN] TP#07174 - mod_cluster ENABLED ▒▒▒▒▒▒▒▒▒▒▒▒▒▒▓▒▓▒▓▒▓▒▓▒▓▒▓▒▓▒▓▒▓▒▓▒▓▒▓▒▓▒▓▒▓▒▓ DONE
+        RUN  Test run ID  Test run summary        Status    Build    
+        OLD  49024        MyTest on OracleJDK1.6  FINISHED  2.0.0.CR4
+        NEW  141955       MyTest on OracleJDK1.6  RUNNING   2.1.0-ER1
+        OLD  49025        MyTest on OracleJDK1.8  FINISHED  2.0.0.CR4
+        NEW  141956       MyTest on OracleJDK1.8  RUNNING   2.1.0-ER1
+    ...
+
 That's it.

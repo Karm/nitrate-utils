@@ -155,10 +155,10 @@ One get a similar output:
     Loading ...
     [PLAN] TP#07174 - mod_cluster ENABLED ▒▒▒▒▒▒▒▒▒▒▒▒▒▒▓▒▓▒▓▒▓▒▓▒▓▒▓▒▓▒▓▒▓▒▓▒▓▒▓▒▓▒▓▒▓▒▓ DONE
         RUN  Test run ID  Test run summary        Status    Build    
-        OLD  49024        MyTest on OracleJDK1.6  FINISHED  2.0.0.CR4
-        NEW  141955       MyTest on OracleJDK1.6  RUNNING   2.1.0-ER1
-        OLD  49025        MyTest on OracleJDK1.8  FINISHED  2.0.0.CR4
-        NEW  141956       MyTest on OracleJDK1.8  RUNNING   2.1.0-ER1
+        OLD  49024        MyTest on OracleJDK1.6  FINISHED  PRODUCT 8.0
+        NEW  141955       MyTest on OracleJDK1.6  RUNNING   PRODUCT 8.1
+        OLD  49025        MyTest on OracleJDK1.8  FINISHED  PRODUCT 8.0
+        NEW  141956       MyTest on OracleJDK1.8  RUNNING   PRODUCT 8.1
     ...
 
 That's it.

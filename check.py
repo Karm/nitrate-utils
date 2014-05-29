@@ -48,7 +48,7 @@ if __name__ == "__main__":
     overall_counter_build2 = 0
     msg_runs = "%sRuns created for build %s: %d %s"
     msg_notify = " Notify %s"
-    my_tcms_url = Nitrate()._config.nitrate.url.split("xml")[0]
+    my_tcms_url = Config().nitrate.url.split("xml")[0]
 
     print color("Warning: This script may take dozens of minutes to complete :-(", color="lightred", background="black")
   

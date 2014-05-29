@@ -7,6 +7,8 @@ from nitrate import *
 import xmlrpclib
 from sets import Set
 
+NUMBER_OF_TRIALS=5
+
 def logerror(err):
     print color("ProtocolError, we will try it again in 5 seconds.", color="lightred", background="black")
     print "    A protocol error occurred"
@@ -22,17 +24,16 @@ def countRuns(testruns):
     testers_set = Set()
     for testrun in testruns:
         testers_set.add(testrun.tester.email)
-        try:
-            if str(testrun.build) == str(options.build1):
-                matching_runs_counter_build1 = matching_runs_counter_build1 + 1
-            if str(testrun.build) == str(options.build2):
-                matching_runs_counter_build2 = matching_runs_counter_build2 + 1
-        except xmlrpclib.ProtocolError, err:
-            logerror(err)
-            if str(testrun.build) == str(options.build1):
-                matching_runs_counter_build1 = matching_runs_counter_build1 + 1
-            if str(testrun.build) == str(options.build2):
-                matching_runs_counter_build2 = matching_runs_counter_build2 + 1        
+        for trial in range(0, NUMBER_OF_TRIALS):
+            try:
+                if str(testrun.build) == str(options.build1):
+                    matching_runs_counter_build1 = matching_runs_counter_build1 + 1
+                if str(testrun.build) == str(options.build2):
+                    matching_runs_counter_build2 = matching_runs_counter_build2 + 1
+                break
+            except xmlrpclib.ProtocolError, err:
+                logerror(err)
+
     return matching_runs_counter_build1, matching_runs_counter_build2, testers_set
 
 if __name__ == "__main__":
@@ -54,22 +55,23 @@ if __name__ == "__main__":
   
     for testplan in TestPlan.search(parent=testplan.id):
         print "[PLAN] %s %s" % (testplan, testplan.status)
-
-        try:
-            testplan_testruns = testplan.testruns
-        except xmlrpclib.ProtocolError, err:
-            logerror(err)
-            testplan_testruns = testplan.testruns
+        for trial in range(0, NUMBER_OF_TRIALS):
+            try:
+                testplan_testruns = testplan.testruns
+                break
+            except xmlrpclib.ProtocolError, err:
+                logerror(err)
 
         runs_count_build1, runs_count_build2, testers_set = countRuns(testplan_testruns)
         overall_counter_build1 = overall_counter_build1 + runs_count_build1
         overall_counter_build2 = overall_counter_build2 + runs_count_build2
 
-        try:
-            testplan_children = testplan.children
-        except xmlrpclib.ProtocolError, err:
-            logerror(err)
-            testplan_children = testplan.children
+        for trial in range(0, NUMBER_OF_TRIALS):
+            try:
+                testplan_children = testplan.children
+                break
+            except xmlrpclib.ProtocolError, err:
+                logerror(err)
 
         if len(testers_set) == 0:
             testers_set.add(testplan.author.email)
@@ -92,11 +94,12 @@ if __name__ == "__main__":
         for child in testplan_children:
             print "    [CHILD plan] %s %s" % (child, child.status)
 
-            try:
-                child_testruns = child.testruns
-            except xmlrpclib.ProtocolError, err:
-                logerror(err)
-                child_testruns = child.testruns
+            for trial in range(0, NUMBER_OF_TRIALS):
+                try:
+                    child_testruns = child.testruns
+                    break
+                except xmlrpclib.ProtocolError, err:
+                    logerror(err)
 
             runs_count_build1, runs_count_build2, testers_set = countRuns(child_testruns)
             overall_counter_build1 = overall_counter_build1 + runs_count_build1

@@ -27,7 +27,7 @@ def logDots(num, char="▒"):
 
 def processRuns(testrun, product, new_product_version, new_build, new_tester, new_manager, run_summary_contains, preserve_caseruns):
     logDots(1)
-    if run_summary_contains in str(testrun.summary):
+    if run_summary_contains == None or run_summary_contains in str(testrun.summary):
         runs.append(["OLD", str(testrun.id), str(testrun.summary), testrun.status.name, str(testrun.build)])
         new_test_run = TestRun(id=None, testplan=testrun.testplan, build=new_build, product=product, version=new_product_version, summary=testrun.summary, notes=testrun.notes, manager=new_manager, tester=new_tester, tags=testrun.tags, testcases=testrun.testcases)
         runs.append(["NEW", str(new_test_run.id), str(new_test_run.summary), new_test_run.status.name, str(new_test_run.build)])

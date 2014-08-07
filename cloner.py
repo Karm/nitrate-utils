@@ -111,6 +111,11 @@ if __name__ == "__main__":
                     logerror(err)
 
     sys.stdout.write(" DONE\n")
-    col_width = max(len(word) for row in runs for word in row) + 2
+    col_width = []
+    for i in range(max(len(row) for row in runs)):
+        col_width.append(0)
     for row in runs:
-        print "".join(word.ljust(col_width) for word in row)
+        for index,word in enumerate(row):
+            col_width[index] = max(len(word)+2,col_width[index])
+    for row in runs:
+        print "".join(word.ljust(col_width[index]) for index,word in enumerate(row))

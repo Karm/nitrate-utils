@@ -41,6 +41,7 @@ if __name__ == "__main__":
     parser.add_option("--plan", dest="plan", type="int", help="test plan id")
     parser.add_option("--build1", dest="build1", type="string", help="build1 name")
     parser.add_option("--build2", dest="build2", type="string", help="build2 name")
+    parser.add_option("--no-check-certificate", dest="no_check_certificate", help="Skip verification of Nitrate's SSL certificate", default=False, action="store_true")
     options = parser.parse_args()[0]
 
     testplan = TestPlan(options.plan)
@@ -53,6 +54,10 @@ if __name__ == "__main__":
 
     print color("Warning: This script may take dozens of minutes to complete :-(", color="lightred", background="black")
   
+    if options.no_check_certificate:
+        import ssl
+        ssl._create_default_https_context = ssl._create_unverified_context
+
     for testplan in TestPlan.search(parent=testplan.id):
         print "[PLAN] %s %s" % (testplan, testplan.status)
         for trial in range(0, NUMBER_OF_TRIALS):

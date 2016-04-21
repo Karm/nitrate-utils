@@ -72,7 +72,7 @@ def printRuns(testruns):
         processInParalel(testrun, setstatus_testcase_ids)
 
 if __name__ == "__main__":
-    parser = optparse.OptionParser(usage="check.py --plan PLAN --build BUILD --product \"JBoss EAP\" OPTIONAL: --case_run_status_ids \"TESTRUN_ID1:TESTCASE_ID1,TESTCASE_ID2,...;TESTRUN_ID2:TESTCASE_ID1,...\" --case_run_status STATUS --run_status_ids TESTRUN_ID1,TESTRUN_ID2,... --run_status STATUS")
+    parser = optparse.OptionParser(usage="check.py --plan PLAN --build BUILD --product \"JBoss EAP\" OPTIONAL: --case_run_status_ids \"TESTRUN_ID1:TESTCASE_ID1,TESTCASE_ID2,...;TESTRUN_ID2:TESTCASE_ID1,...\" --case_run_status STATUS --run_status_ids TESTRUN_ID1,TESTRUN_ID2,... --run_status STATUS, --no-check-certificate")
     parser.add_option("--plan", dest="plan", type="int", help="test plan id", default=5709)
     parser.add_option("--build", dest="build", type="string", help="build name", default="EAP6.1.0.ER4")
     parser.add_option("--product", dest="product", type="string", help="product name", default="JBoss EAP")
@@ -80,6 +80,7 @@ if __name__ == "__main__":
     parser.add_option("--case_run_status", dest="case_run_status", type="string", help="PAD, IDLE, PASSED, FAILED, RUNNING, PAUSED, BLOCKED, ERROR, WAIVED")
     parser.add_option("--run_status_ids", dest="run_status_ids", type="string", help="set status of certain runs")
     parser.add_option("--run_status", dest="run_status", type="string", help="RUNNING FINISHED")
+    parser.add_option("--no-check-certificate", dest="no_check_certificate", help="Skip verification of Nitrate's SSL certificate", default=False, action="store_true")
 
     options = parser.parse_args()[0]
 
@@ -102,6 +103,10 @@ if __name__ == "__main__":
     msg_runs = "%sRuns created for build %s: %s"
 
     print color("Warning: This script may take minutes to complete. I can work in parallel, yet python-nitrate keeps only 1 connection open :-(", color="lightred", background="black")
+
+    if options.no_check_certificate:
+        import ssl
+        ssl._create_default_https_context = ssl._create_unverified_context
   
     print "[PLAN] %s %s" % (testplan, testplan.status)
 

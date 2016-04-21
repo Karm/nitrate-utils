@@ -20,7 +20,12 @@ if __name__ == "__main__":
     parser = optparse.OptionParser(usage="check.py --plan PLAN --build BUILD [options]")
     parser.add_option("--plan", dest="plan", type="int", help="test plan id")
     parser.add_option("--build", dest="build", type="int", help="build id")
+    parser.add_option("--no-check-certificate", dest="no_check_certificate", help="Skip verification of Nitrate's SSL certificate", default=False, action="store_true")
     options = parser.parse_args()[0]
+
+if options.no_check_certificate:
+    import ssl
+    ssl._create_default_https_context = ssl._create_unverified_context
 
 our_testplans = {}
 try:

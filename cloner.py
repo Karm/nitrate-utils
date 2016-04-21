@@ -66,8 +66,14 @@ if __name__ == "__main__":
     parser.add_option("--new_manager",         dest="new_manager",         type="string", help="new manager",                 default="shadowman@redhat.com")
     parser.add_option("--run_summary_contains",dest="run_summary_contains",type="string", help="run summary contains",        default=None)
     parser.add_option("--preserve_caseruns",   dest="preserve_caseruns",   type="string",help="preserve old caseruns states",default=False)
+    parser.add_option("--no-check-certificate",dest="no_check_certificate",help="Skip verification of Nitrate's SSL certificate", default=False, action="store_true")
 
     options = parser.parse_args()[0]
+
+    if options.no_check_certificate:
+        import ssl
+        ssl._create_default_https_context = ssl._create_unverified_context
+   
     print color("Warning: This script may take minutes to complete.", color="lightred", background="black")
     sys.stdout.write("Loading ...\n")
     sys.stdout.flush()
